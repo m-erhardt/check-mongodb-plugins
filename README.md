@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/m-erhardt/check-mongodb-plugins/actions/workflows/pylint.yml/badge.svg)](https://github.com/m-erhardt/check-mongodb-plugins/actions/workflows/pylint.yml) [![pycodestyle](https://github.com/m-erhardt/check-mongodb-plugins/actions/workflows/pycodestyle.yml/badge.svg)](https://github.com/m-erhardt/check-mongodb-plugins/actions/workflows/pycodestyle.yml) [![Release](https://img.shields.io/github/release/m-erhardt/check-mongodb-plugins.svg)](https://github.com/m-erhardt/check-mongodb-plugins/releases)
+
 # check-mongodb-plugins
 
 ![Output of check_mongodb_stats.py](docs/img/check_mongodb_stats.png?raw=true "Output of check_mongodb_stats.py")
@@ -21,15 +23,15 @@
 * Instead the plugins reads the parametes from a hidden toml-formatted configuration file
   * Default: `/etc/nagios/.mdbservice`, use `--credentialfile=/path/to/your/file`for a non-default location
   * Ideally change the file owner and permissions of `.mdbservice` so that only the user executing the plugins can read the config file
-  ```toml
-  [localhost]
-  hostname="localhost"
-  port=27017
-  user="yourdbuser"
-  pw="secretpassword"
-  authdb="admin"
-  tls=true
-  ```
+    ```toml
+    [localhost]
+    hostname="localhost"
+    port=27017
+    user="yourdbuser"
+    pw="secretpassword"
+    authdb="admin"
+    tls=true
+    ```
 
 ##### Parameters
 * `[instancename]` : you can configure multiple connections within one `.mdbservice`-file. This config section name corresponds with the `--instance`-argument of the plugin
