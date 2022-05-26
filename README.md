@@ -11,6 +11,10 @@
 * Written for python3
 * Minimal dependencies (only required non-default library is `toml`)
 
+## Documentation
+* [check_mongodb_stats.py](docs/check_mongodb_stats.md)
+* [check_mongodb_dbsize.py](docs/check_mongodb_dbsize.md)
+
 ## Configuration
 
 #### Python setup
@@ -57,6 +61,3 @@
   )
   ```
 
-## Documentation
-* [check_mongodb_stats.py](docs/check_mongodb_stats.md)
-* [check_mongodb_dbsize.py](docs/check_mongodb_dbsize.md)
