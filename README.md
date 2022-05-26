@@ -21,7 +21,7 @@
 * Instead the plugins reads the parametes from a hidden toml-formatted configuration file
   * Default: `/etc/nagios/.mdbservice`, use `--credentialfile=/path/to/your/file`for a non-default location
   * Ideally change the file owner and permissions of `.mdbservice` so that only the user executing the plugins can read the config file
-  * ```toml
+```toml
 [localhost]
 hostname="localhost"
 port=27017
@@ -42,7 +42,7 @@ tls=true
 
 #### Configuring database use
 * Open a MongoDB DB shell, create a dedicated monitoring user and assign the `clusterMonitor` role
-* ```java
+```java
 use admin
 db.createUser(
     {
