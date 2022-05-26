@@ -11,6 +11,11 @@ on:
       - 'docs/**'
       - '.github/**'
       - 'README.md'
+  workflow_dispatch:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/**'
+      - 'README.md'
 
 jobs:
   test:
