@@ -39,3 +39,4 @@ OK - Database "exampledb" contains: 6 Collections, 0 Views, 8011700 Objects, 19 
 * `--credentialfile /path/to/.mdbservice` : specify a non-default location for your connection settings file (default: `/etc/nagios/.mdbservice`)
 * `--instance server01` : refers to the config section within the `.mdbservice` file (defaults to `localhost`)
 * `--mongobin /path/to/mongo` : use this parameter if your `mongo` binary is not located at `/usr/bin/mongo`
+

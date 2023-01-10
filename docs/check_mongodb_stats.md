@@ -31,3 +31,4 @@ OK - MongoDB 4.2.20 is up for 15 days, 3:35:10 - Connections: 61, Memory: 7132Mi
 * `--credentialfile /path/to/.mdbservice` : specify a non-default location for your connection settings file (default: `/etc/nagios/.mdbservice`)
 * `--instance server01` : refers to the config section within the `.mdbservice` file (defaults to `localhost`)
 * `--mongobin /path/to/mongo` : use this parameter if your `mongo` binary is not located at `/usr/bin/mongo`
+
