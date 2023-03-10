@@ -91,7 +91,7 @@ def query_db(args, creds: dict):
     cmd = [args.mongoloc, f'{ creds["hostname"] }:{ creds["port"] }/{ args.db }',
            "--quiet", "--eval", "JSON.stringify(db.stats())"]
 
-    if creds["user"] != "" and creds["user"] != "":
+    if creds["user"] != "" and creds["pw"] != "":
         # Append parameters for authentification
         cmd.append('-u')
         cmd.append(creds["user"])
