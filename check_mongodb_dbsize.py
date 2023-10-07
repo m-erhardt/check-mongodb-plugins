@@ -15,11 +15,11 @@
 import sys
 import json
 from subprocess import run, PIPE
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace as Arguments
 from toml import load
 
 
-def get_args():
+def get_args() -> Arguments:
     """ Parse Arguments """
     parser = ArgumentParser(
                  description="Icinga/Nagios plugin which checks the size of a \
@@ -47,8 +47,8 @@ def get_args():
 
     miscopts = parser.add_argument_group('Miscellaneous options')
     miscopts.add_argument("--mongobin", required=False,
-                          help="Location of \"mongo\" binary", type=str, dest='mongoloc',
-                          default='/usr/bin/mongo')
+                          help="Location of \"mongosh\" binary", type=str, dest='mongoloc',
+                          default='/usr/bin/mongosh')
 
     args = parser.parse_args()
     return args
@@ -70,7 +70,7 @@ def exit_plugin(returncode: int, output: str, perfdata: str):
         sys.exit(0)
 
 
-def convert_bytes_to_pretty(raw_bytes: int):
+def convert_bytes_to_pretty(raw_bytes: int) -> str:
     """ converts raw bytes into human readable output """
     if raw_bytes >= 1099511627776:
         output = f'{ round(raw_bytes / 1024 **4, 2) }TiB'
@@ -85,11 +85,11 @@ def convert_bytes_to_pretty(raw_bytes: int):
     return output
 
 
-def query_db(args, creds: dict):
+def query_db(args, creds: dict) -> dict:
     """ query instance statistics from MongoDB """
 
     cmd = [args.mongoloc, f'{ creds["hostname"] }:{ creds["port"] }/{ args.db }',
-           "--quiet", "--eval", "JSON.stringify(db.stats())"]
+           "--quiet", "--eval", "EJSON.stringify(db.stats())"]
 
     if creds["user"] != "" and creds["pw"] != "":
         # Append parameters for authentification
@@ -100,9 +100,19 @@ def query_db(args, creds: dict):
         cmd.append('--authenticationDatabase')
         cmd.append(creds["authdb"])
 
+    # Append parameter for TLS connection
     if creds["tls"] is True:
-        # Append parameter for TLS connection
         cmd.append('--tls')
+
+    if creds.get("tlscafile") is not None:
+        cmd.append('--tlsCAFile')
+        cmd.append(f'{ creds["tlscafile"] }')
+
+    if creds["tls_allow_invalid_hostnames"] is True and creds["tls"] is True:
+        cmd.append('--tlsAllowInvalidHostnames')
+
+    if creds["tls_allow_invalid_certificates"] is True and creds["tls"] is True:
+        cmd.append('--tlsAllowInvalidCertificates')
 
     result = run(cmd, shell=False, check=False, stdout=PIPE, stderr=PIPE)
 
@@ -125,7 +135,7 @@ def query_db(args, creds: dict):
     return output
 
 
-def load_db_credentials(file: str, instance: str):
+def load_db_credentials(file: str, instance: str) -> dict:
     """ load MongoDB credentials from file """
 
     try:
@@ -152,6 +162,10 @@ def load_db_credentials(file: str, instance: str):
         creds["authdb"] = "admin"
     if creds.get("tls") is None:
         creds["tls"] = True
+    if creds.get("tls_allow_invalid_hostnames") is None:
+        creds["tls_allow_invalid_hostnames"] = False
+    if creds.get("tls_allow_invalid_certificates") is None:
+        creds["tls_allow_invalid_certificates"] = False
 
     return creds
 

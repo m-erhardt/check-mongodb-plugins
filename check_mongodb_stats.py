@@ -16,11 +16,11 @@ import sys
 import json
 from datetime import timedelta
 from subprocess import run, PIPE
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace as Arguments
 from toml import load
 
 
-def get_args():
+def get_args() -> Arguments:
     """ Parse Arguments """
     parser = ArgumentParser(
                  description="Icinga/Nagios plugin which checks metrics of a \
@@ -34,8 +34,8 @@ def get_args():
                         dest='instance', default='localhost')
     miscopts = parser.add_argument_group('Miscellaneous options')
     miscopts.add_argument("--mongobin", required=False,
-                          help="Location of \"mongo\" binary", type=str, dest='mongoloc',
-                          default='/usr/bin/mongo')
+                          help="Location of \"mongosh\" binary", type=str, dest='mongoloc',
+                          default='/usr/bin/mongosh')
 
     args = parser.parse_args()
     return args
@@ -57,11 +57,11 @@ def exit_plugin(returncode: int, output: str, perfdata: str):
         sys.exit(0)
 
 
-def query_db(args, creds: dict):
+def query_db(args, creds: dict) -> dict:
     """ query instance statistics from MongoDB """
 
     cmd = [args.mongoloc, f'{ creds["hostname"] }:{ creds["port"] }',
-           "--quiet", "--eval", "JSON.stringify(db.serverStatus())"]
+           "--quiet", "--eval", "EJSON.stringify(db.serverStatus())"]
 
     if creds["user"] != "" and creds["pw"] != "":
         # Append parameters for authentification
@@ -72,9 +72,19 @@ def query_db(args, creds: dict):
         cmd.append('--authenticationDatabase')
         cmd.append(creds["authdb"])
 
+    # Append parameter for TLS connection
     if creds["tls"] is True:
-        # Append parameter for TLS connection
         cmd.append('--tls')
+
+    if creds.get("tlscafile") is not None:
+        cmd.append('--tlsCAFile')
+        cmd.append(f'{ creds["tlscafile"] }')
+
+    if creds["tls_allow_invalid_hostnames"] is True and creds["tls"] is True:
+        cmd.append('--tlsAllowInvalidHostnames')
+
+    if creds["tls_allow_invalid_certificates"] is True and creds["tls"] is True:
+        cmd.append('--tlsAllowInvalidCertificates')
 
     result = run(cmd, shell=False, check=False, stdout=PIPE, stderr=PIPE)
 
@@ -93,7 +103,7 @@ def query_db(args, creds: dict):
     return output
 
 
-def load_db_credentials(file: str, instance: str):
+def load_db_credentials(file: str, instance: str) -> dict:
     """ load MongoDB credentials from file """
 
     try:
@@ -120,6 +130,10 @@ def load_db_credentials(file: str, instance: str):
         creds["authdb"] = "admin"
     if creds.get("tls") is None:
         creds["tls"] = True
+    if creds.get("tls_allow_invalid_hostnames") is None:
+        creds["tls_allow_invalid_hostnames"] = False
+    if creds.get("tls_allow_invalid_certificates") is None:
+        creds["tls_allow_invalid_certificates"] = False
 
     return creds
 
@@ -146,9 +160,9 @@ def main():
         instance['conn_cur'] = int(stats['connections']['current'])
         instance['conn_avail'] = int(stats['connections']['available'])
         instance['conn_total'] = int(instance['conn_cur'] + instance['conn_avail'])
-        instance['byte_in'] = int(stats['network']['bytesIn']['$numberLong'])
-        instance['byte_out'] = int(stats['network']['bytesOut']['$numberLong'])
-        instance['transactions'] = int(stats['transactions']['totalCommitted']['$numberLong'])
+        instance['byte_in'] = int(stats['network']['bytesIn'])
+        instance['byte_out'] = int(stats['network']['bytesOut'])
+        instance['transactions'] = int(stats['transactions']['totalCommitted'])
         instance['mem_virt'] = int(stats['mem']['virtual'])
         instance['mem_resident'] = int(stats['mem']['resident'])
 

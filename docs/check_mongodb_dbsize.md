@@ -4,8 +4,8 @@
 
 ## Usage
 ```
-usage: check_mongodb_dbsize.py [-h] --database DB [--wsize WSIZE] [--csize CSIZE] [--wobj WOBJ] [--cobj COBJ] [--credentialfile CREDFILE] [--instance INSTANCE]
-                               [--mongobin MONGOLOC]
+usage: check_mongodb_dbsize.py [-h] --database DB [--wsize WSIZE] [--csize CSIZE] [--wobj WOBJ] [--cobj COBJ] [--credentialfile CREDFILE]
+                               [--instance INSTANCE] [--mongobin MONGOLOC]
 
 Icinga/Nagios plugin which checks the size of a MongoDB database
 
@@ -25,7 +25,7 @@ Instance parameters:
   --instance INSTANCE   Use credentials for this instance
 
 Miscellaneous options:
-  --mongobin MONGOLOC   Location of "mongo" binary
+  --mongobin MONGOLOC   Location of "mongosh" binary
 ```
 
 ### Usage example
@@ -36,7 +36,7 @@ OK - Database "exampledb" contains: 6 Collections, 0 Views, 8011700 Objects, 19 
 ```
 
 ### Parameters
-* `--credentialfile /path/to/.mdbservice` : specify a non-default location for your connection settings file (default: `/etc/nagios/.mdbservice`)
-* `--instance server01` : refers to the config section within the `.mdbservice` file (defaults to `localhost`)
-* `--mongobin /path/to/mongo` : use this parameter if your `mongo` binary is not located at `/usr/bin/mongo`
+- `--credentialfile /path/to/.mdbservice` : specify a non-default location for your connection settings file (default: `/etc/nagios/.mdbservice`)
+- `--instance server01` : refers to the config section within the `.mdbservice` file (defaults to `localhost`)
+- `--mongobin /path/to/mongosh` : use this parameter if your `mongosh` binary is not located at `/usr/bin/mongosh`
 
