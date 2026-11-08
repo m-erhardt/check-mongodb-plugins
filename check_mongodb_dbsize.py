@@ -72,23 +72,26 @@ def exit_plugin(returncode: int, output: str, perfdata: str):
 
 def convert_bytes_to_pretty(raw_bytes: int) -> str:
     """ converts raw bytes into human readable output """
+
+    output = ''
+
     if raw_bytes >= 1099511627776:
-        output = f'{ round(raw_bytes / 1024 **4, 2) }TiB'
+        output = f'{round(raw_bytes / 1024 ** 4, 2)}TiB'
     elif raw_bytes >= 1073741824:
-        output = f'{ round(raw_bytes / 1024 **3, 2) }GiB'
+        output = f'{round(raw_bytes / 1024 ** 3, 2)}GiB'
     elif raw_bytes >= 1048576:
-        output = f'{ round(raw_bytes / 1024 **2, 2) }MiB'
+        output = f'{round(raw_bytes / 1024 ** 2, 2)}MiB'
     elif raw_bytes >= 1024:
-        output = f'{ round(raw_bytes / 1024, 2) }KiB'
+        output = f'{round(raw_bytes / 1024, 2)}KiB'
     elif raw_bytes < 1024:
-        output = f'{ raw_bytes }B'
+        output = f'{raw_bytes}B'
     return output
 
 
 def query_db(args, creds: dict) -> dict:
     """ query instance statistics from MongoDB """
 
-    cmd = [args.mongoloc, f'{ creds["hostname"] }:{ creds["port"] }/{ args.db }',
+    cmd = [args.mongoloc, f'{creds["hostname"]}:{creds["port"]}/{args.db}',
            "--quiet", "--eval", "EJSON.stringify(db.stats())"]
 
     if creds["user"] != "" and creds["pw"] != "":
@@ -106,7 +109,7 @@ def query_db(args, creds: dict) -> dict:
 
     if creds.get("tlscafile") is not None:
         cmd.append('--tlsCAFile')
-        cmd.append(f'{ creds["tlscafile"] }')
+        cmd.append(f'{creds["tlscafile"]}')
 
     if creds["tls_allow_invalid_hostnames"] is True and creds["tls"] is True:
         cmd.append('--tlsAllowInvalidHostnames')
@@ -118,21 +121,21 @@ def query_db(args, creds: dict) -> dict:
 
     # Check if command exited without error code
     if result.returncode != 0:
-        exit_plugin(3, (f'Error while quering MongoDB: { result.stderr.decode() } \n '
-                        f'{ result.stdout.decode() }'), '')
+        exit_plugin(3, (f'Error while quering MongoDB: {result.stderr.decode()} \n '
+                        f'{result.stdout.decode()}'), '')
 
     try:
         for line in result.stdout.decode().splitlines():
             if line.startswith('{"db":'):
                 output = json.loads(line)
     except json.decoder.JSONDecodeError as err:
-        exit_plugin(3, f'Error while decoding JSON response: { err }', '')
+        exit_plugin(3, f'Error while decoding JSON response: {err}', '')
 
     if 'output' not in locals():
         # No matching JSON line was found in stdout
         exit_plugin(3, 'No valid JSON object found in output!', '')
 
-    return output
+    return output  # pylint: disable=possibly-used-before-assignment; we exit_plugin() when output is unset
 
 
 def load_db_credentials(file: str, instance: str) -> dict:
@@ -142,12 +145,12 @@ def load_db_credentials(file: str, instance: str) -> dict:
         # load toml/ini config into dict
         config = load(file)
     except FileNotFoundError:
-        exit_plugin(3, f'Credential file { file } not found!', '')
+        exit_plugin(3, f'Credential file {file} not found!', '')
 
     try:
         creds = config[instance]
     except KeyError:
-        exit_plugin(3, f'Instance { instance } not found in credential file { file }!', '')
+        exit_plugin(3, f'Instance {instance} not found in credential file {file}!', '')
 
     # Set default options if not set in ini file
     if creds.get("hostname") is None:
@@ -199,21 +202,21 @@ def main():
         exit_plugin(3, f'Error while extracting information from response: {err}', '')
 
     # Construct output and perfdata strings
-    output = (f'Database "{ database["name"] }" contains: '
-              f'{ database["collections"] } Collections, '
-              f'{ database["views"] } Views, '
-              f'{ database["objects"] } Objects, '
-              f'{ database["indexes"] } Indexes. '
-              f'Size: { convert_bytes_to_pretty(database["total_size"]) }')
+    output = (f'Database "{database["name"]}" contains: '
+              f'{database["collections"]} Collections, '
+              f'{database["views"]} Views, '
+              f'{database["objects"]} Objects, '
+              f'{database["indexes"]} Indexes. '
+              f'Size: {convert_bytes_to_pretty(database["total_size"])}')
 
-    perfdata = (f' | \'collections\'={ database["collections"] };;;; '
-                f'\'views\'={ database["views"] };;;; '
-                f'\'objects\'={ database["objects"] };{ args.wobj or "" };{ args.cobj or "" };; '
-                f'\'indexes\'={ database["indexes"] };;;; '
-                f'\'storage_size\'={ database["storage_size"] }B;;;; '
-                f'\'data_size\'={ database["data_size"] }B;;;; '
-                f'\'total_size\'={ database["total_size"] }B;'
-                f'{ args.wsize or "" };{ args.csize or "" };; ')
+    perfdata = (f' | \'collections\'={database["collections"]};;;; '
+                f'\'views\'={database["views"]};;;; '
+                f'\'objects\'={database["objects"]};{args.wobj or ""};{args.cobj or ""};; '
+                f'\'indexes\'={database["indexes"]};;;; '
+                f'\'storage_size\'={database["storage_size"]}B;;;; '
+                f'\'data_size\'={database["data_size"]}B;;;; '
+                f'\'total_size\'={database["total_size"]}B;'
+                f'{args.wsize or ""};{args.csize or ""};; ')
 
     # Evaluate status code
     returncode = 0

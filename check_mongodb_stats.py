@@ -60,7 +60,7 @@ def exit_plugin(returncode: int, output: str, perfdata: str):
 def query_db(args, creds: dict) -> dict:
     """ query instance statistics from MongoDB """
 
-    cmd = [args.mongoloc, f'{ creds["hostname"] }:{ creds["port"] }',
+    cmd = [args.mongoloc, f'{creds["hostname"]}:{creds["port"]}',
            "--quiet", "--eval", "EJSON.stringify(db.serverStatus())"]
 
     if creds["user"] != "" and creds["pw"] != "":
@@ -78,7 +78,7 @@ def query_db(args, creds: dict) -> dict:
 
     if creds.get("tlscafile") is not None:
         cmd.append('--tlsCAFile')
-        cmd.append(f'{ creds["tlscafile"] }')
+        cmd.append(f'{creds["tlscafile"]}')
 
     if creds["tls_allow_invalid_hostnames"] is True and creds["tls"] is True:
         cmd.append('--tlsAllowInvalidHostnames')
@@ -90,17 +90,17 @@ def query_db(args, creds: dict) -> dict:
 
     # Check if command exited without error code
     if result.returncode != 0:
-        exit_plugin(3, (f'Error while quering MongoDB: { result.stderr.decode() } \n '
-                        f'{ result.stdout.decode() }'), '')
+        exit_plugin(3, (f'Error while quering MongoDB: {result.stderr.decode()} \n '
+                        f'{result.stdout.decode()}'), '')
 
     try:
         for line in result.stdout.decode().splitlines():
             if line.startswith('{"host":'):
                 output = json.loads(line)
     except json.decoder.JSONDecodeError as err:
-        exit_plugin(3, f'Error while decoding JSON response: { err }', '')
+        exit_plugin(3, f'Error while decoding JSON response: {err}', '')
 
-    return output
+    return output  # pylint: disable=possibly-used-before-assignment; we exit_plugin() when output is unset
 
 
 def load_db_credentials(file: str, instance: str) -> dict:
@@ -110,12 +110,12 @@ def load_db_credentials(file: str, instance: str) -> dict:
         # load toml/ini config into dict
         config = load(file)
     except FileNotFoundError:
-        exit_plugin(3, f'Credential file { file } not found!', '')
+        exit_plugin(3, f'Credential file {file} not found!', '')
 
     try:
         creds = config[instance]
     except KeyError:
-        exit_plugin(3, f'Instance { instance } not found in credential file { file }!', '')
+        exit_plugin(3, f'Instance {instance} not found in credential file {file}!', '')
 
     # Set default options if not set in ini file
     if creds.get("hostname") is None:
@@ -170,17 +170,17 @@ def main():
         exit_plugin(3, f'Error while extracting information from response: {err}', '')
 
     # Construct output and perfdata strings
-    output = (f'MongoDB { instance["version"] } is up for '
-              f'{ instance["uptime_str"] } '
-              f'- Connections: { instance["conn_cur"] }, '
-              f'Memory: { instance["mem_resident"] }MiB ')
+    output = (f'MongoDB {instance["version"]} is up for '
+              f'{instance["uptime_str"]} '
+              f'- Connections: {instance["conn_cur"]}, '
+              f'Memory: {instance["mem_resident"]}MiB ')
 
-    perfdata = (f' | \'conn\'={ instance["conn_cur"] };;;0;{ instance["conn_total"] } '
-                f'\'byte_in\'={ instance["byte_in"] }B;;;; '
-                f'\'byte_out\'={ instance["byte_out"] }B;;;; '
-                f'\'transactions\'={ instance["byte_out"] };;;; '
-                f'\'mem_virtual\'={ instance["mem_virt"] }MiB;;;; '
-                f'\'mem_resident\'={ instance["mem_resident"] }MiB;;;; ')
+    perfdata = (f' | \'conn\'={instance["conn_cur"]};;;0;{instance["conn_total"]} '
+                f'\'byte_in\'={instance["byte_in"]}B;;;; '
+                f'\'byte_out\'={instance["byte_out"]}B;;;; '
+                f'\'transactions\'={instance["byte_out"]};;;; '
+                f'\'mem_virtual\'={instance["mem_virt"]}MiB;;;; '
+                f'\'mem_resident\'={instance["mem_resident"]}MiB;;;; ')
 
     if instance['state'] == 1:
         exit_plugin(0, output, perfdata)
